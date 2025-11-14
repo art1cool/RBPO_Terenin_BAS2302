@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import service.PlaylistService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import entity.PlaylistEntity;
@@ -23,12 +24,14 @@ public class PlaylistController {
     private final PlaylistService playlistService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('read')")
     public ResponseEntity<PlaylistEntity> getPlaylist(String name) {
         return ResponseEntity.ok()
                 .body(playlistService.getPlaylist(name));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('modify')")
     public ResponseEntity<PlaylistEntity> addPlaylist(
             @Valid @RequestBody Playlist playlist){
         return ResponseEntity.status(CREATED)
@@ -37,11 +40,13 @@ public class PlaylistController {
     }
 
     @DeleteMapping("by-name/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removePlaylist(@PathVariable String name) {
         playlistService.removePlaylist(name);
         return ResponseEntity.noContent().build();
     }
     @PatchMapping("/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PlaylistEntity> updatePlaylist(
             @PathVariable String name,
             @RequestBody Playlist updatedFields) {

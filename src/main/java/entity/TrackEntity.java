@@ -14,16 +14,18 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class TrackEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true,  nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", nullable = false)
     private ArtistEntity artist;
+
+    @Column(nullable = false)
+    private String duration;
 }

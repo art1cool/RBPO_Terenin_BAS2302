@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import service.TrackService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import entity.TrackEntity;
@@ -22,12 +23,14 @@ public class TrackController {
     private final TrackService trackService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('read')")
     public ResponseEntity<TrackEntity> getTrack(String name) {
         return ResponseEntity.ok()
                 .body(trackService.getTrack(name));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('modify')")
     public ResponseEntity<TrackEntity> addTrack(
             @Valid @RequestBody Track track){
         return ResponseEntity.status(CREATED)
@@ -36,11 +39,13 @@ public class TrackController {
     }
 
     @DeleteMapping("by-name/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeTrack(@PathVariable String name) {
         trackService.removeTrack(name);
         return ResponseEntity.noContent().build();
     }
     @PatchMapping("/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TrackEntity> updateTrack(
             @PathVariable String name,
             @RequestBody Track updatedFields) {
