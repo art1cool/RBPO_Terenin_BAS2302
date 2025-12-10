@@ -15,7 +15,18 @@ spring:
       mode: always
 
 server:
-  port: 8080
+  port: 8443
+  ssl:
+    enabled:
+      true
+    key-store:
+      classpath:server_cert1BIB23342.jks
+    key-store-type:
+      JKS
+    key-store-password:
+      server_pass1BIB23342
+    key-alias:
+      server_cert1BIB23342
 
 jwt:
   accessExpiration: 900000

@@ -1,5 +1,5 @@
 package controller;
-
+//1
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import model.Track;
@@ -11,12 +11,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import entity.TrackEntity;
+
 @RestController
 @RequestMapping("/tracks")
 @RequiredArgsConstructor
 @Validated
-
-
 public class TrackController {
     private final TrackService trackService;
 
@@ -42,6 +41,7 @@ public class TrackController {
         trackService.removeTrack(name);
         return ResponseEntity.noContent().build();
     }
+
     @PatchMapping("/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TrackEntity> updateTrack(
@@ -54,6 +54,15 @@ public class TrackController {
         }
         return ResponseEntity.ok(updated);
     }
+
+    // Удалить трек из альбома (но не удалять сам трек)
+    @PatchMapping("/{name}/remove-from-album")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TrackEntity> removeTrackFromAlbum(@PathVariable String name) {
+        TrackEntity updated = trackService.removeTrackFromAlbum(name);
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updated);
+    }
 }
-
-

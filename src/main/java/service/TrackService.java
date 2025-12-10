@@ -1,13 +1,17 @@
 package service;
-
+//1
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import model.Track;
 import entity.TrackEntity;
 import repository.TrackRepository;
 import entity.ArtistEntity;
 import repository.ArtistRepository;
+import entity.AlbumEntity;
+import repository.AlbumRepository;
 
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -15,6 +19,7 @@ import java.util.regex.Pattern;
 public class TrackService {
     private final TrackRepository trackRepository;
     private final ArtistRepository artistRepository;
+    private final AlbumRepository albumRepository; // Добавляем
 
     private static final String DURATION_REGEX = "^\\d{1,2}:\\d{2}(?::\\d{2})?$";
 
@@ -22,6 +27,11 @@ public class TrackService {
         return trackRepository.findByName(name);
     }
 
+    public TrackEntity getTrackById(UUID id) {
+        return trackRepository.findById(id).orElse(null);
+    }
+
+    @Transactional
     public TrackEntity addTrack(Track track) {
         ArtistEntity artist = artistRepository.findByName(track.getArtist().getName());
         if (artist == null) {
@@ -36,6 +46,15 @@ public class TrackService {
         trackEntity.setArtist(artist);
         trackEntity.setDuration(track.getDuration());
 
+        // Если указан альбом, находим и устанавливаем его
+        if (track.getAlbum() != null && track.getAlbum().getName() != null) {
+            AlbumEntity album = albumRepository.findByName(track.getAlbum().getName());
+            if (album == null) {
+                throw new RuntimeException("Album not found: " + track.getAlbum().getName());
+            }
+            trackEntity.setAlbum(album);
+        }
+
         return trackRepository.save(trackEntity);
     }
 
@@ -43,6 +62,7 @@ public class TrackService {
         trackRepository.delete(getTrack(name));
     }
 
+    @Transactional
     public TrackEntity updateTrack(String name, Track updatedFields) {
         TrackEntity existing = trackRepository.findByName(name);
         if (existing == null) {
@@ -71,6 +91,32 @@ public class TrackService {
             existing.setDuration(dur);
         }
 
+        // Обновление альбома
+        if (updatedFields.getAlbum() != null) {
+            if (updatedFields.getAlbum().getName() == null ||
+                    updatedFields.getAlbum().getName().isBlank()) {
+                // Если имя альбома пустое, удаляем связь
+                existing.setAlbum(null);
+            } else {
+                // Находим и устанавливаем новый альбом
+                AlbumEntity album = albumRepository.findByName(updatedFields.getAlbum().getName());
+                if (album == null) {
+                    throw new RuntimeException("Album not found: " + updatedFields.getAlbum().getName());
+                }
+                existing.setAlbum(album);
+            }
+        }
+
+        return trackRepository.save(existing);
+    }
+
+    @Transactional
+    public TrackEntity removeTrackFromAlbum(String trackName) {
+        TrackEntity existing = trackRepository.findByName(trackName);
+        if (existing == null) {
+            return null;
+        }
+        existing.setAlbum(null); // Удаляем связь с альбомом
         return trackRepository.save(existing);
     }
 }
