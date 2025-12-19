@@ -33,4 +33,6 @@ public interface UserSessionRepository extends JpaRepository<UserSessionEntity, 
     Optional<UserSessionEntity> findByUserIdAndDeviceInfo(UUID userId, String deviceInfo);
 
     Optional<UserSessionEntity> findByUserIdAndDeviceInfoAndStatus(UUID userId, String deviceInfo, SessionStatus status);
+
+    List<UserSessionEntity> findByUserId(UUID userId);
 }

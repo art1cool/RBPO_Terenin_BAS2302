@@ -1,5 +1,5 @@
 package entity;
-//1
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

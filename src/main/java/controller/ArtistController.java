@@ -7,33 +7,38 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import service.ArtistService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import util.MappingUtil;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import model.Artist;
 import entity.ArtistEntity;
+
 @RestController
 @RequestMapping("/artists")
 @RequiredArgsConstructor
 @Validated
-
-
 public class ArtistController {
     private final ArtistService artistService;
+    private final MappingUtil mappingUtil;
 
     @GetMapping
     @PreAuthorize("hasAuthority('read')")
-    public ResponseEntity<ArtistEntity> getArtist(String name) {
-        return ResponseEntity.ok()
-                .body(artistService.getArtist(name));
+    public ResponseEntity<Artist> getArtist(String name) {
+        ArtistEntity entity = artistService.getArtist(name);
+        if (entity == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(mappingUtil.toDto(entity));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ArtistEntity> addArtist(
+    public ResponseEntity<Artist> addArtist(
             @Valid @RequestBody Artist artist){
+        ArtistEntity savedEntity = artistService.addArtist(artist);
         return ResponseEntity.status(CREATED)
                 .header("Name", artist.getName())
-                .body(artistService.addArtist(artist));
+                .body(mappingUtil.toDto(savedEntity));
     }
 
     @DeleteMapping("by-name/{name}")
@@ -45,14 +50,14 @@ public class ArtistController {
 
     @PatchMapping("/{name}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ArtistEntity> updateArtist(
+    public ResponseEntity<Artist> updateArtist(
             @PathVariable String name,
             @RequestBody Artist updatedFields) {
 
-        ArtistEntity updated = artistService.updateArtist(name, updatedFields);
-        if (updated == null) {
+        ArtistEntity updatedEntity = artistService.updateArtist(name, updatedFields);
+        if (updatedEntity == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(mappingUtil.toDto(updatedEntity));
     }
 }

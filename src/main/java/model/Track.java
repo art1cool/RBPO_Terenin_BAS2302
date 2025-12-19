@@ -1,5 +1,5 @@
 package model;
-//1
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,5 +17,5 @@ public class Track {
     @Pattern(regexp = "^\\d{1,2}:\\d{2}(?::\\d{2})?$")
     private String duration;
 
-    private Album album; // Добавляем связь с альбомом
+    private Album album;
 }

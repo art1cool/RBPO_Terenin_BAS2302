@@ -1,15 +1,16 @@
 package service;
-//1
+
+import entity.AlbumEntity;
+import entity.ArtistEntity;
+import entity.TrackEntity;
 import lombok.RequiredArgsConstructor;
+import model.Track;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import model.Track;
-import entity.TrackEntity;
-import repository.TrackRepository;
-import entity.ArtistEntity;
-import repository.ArtistRepository;
-import entity.AlbumEntity;
 import repository.AlbumRepository;
+import repository.ArtistRepository;
+import repository.TrackRepository;
+import util.MappingUtil;
 
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -19,7 +20,8 @@ import java.util.regex.Pattern;
 public class TrackService {
     private final TrackRepository trackRepository;
     private final ArtistRepository artistRepository;
-    private final AlbumRepository albumRepository; // Добавляем
+    private final AlbumRepository albumRepository;
+    private final MappingUtil mappingUtil;
 
     private static final String DURATION_REGEX = "^\\d{1,2}:\\d{2}(?::\\d{2})?$";
 
@@ -41,12 +43,9 @@ public class TrackService {
             throw new IllegalArgumentException("Invalid duration format. Expected x:xx, xx:xx, x:xx:xx or xx:xx:xx");
         }
 
-        TrackEntity trackEntity = new TrackEntity();
-        trackEntity.setName(track.getName());
+        TrackEntity trackEntity = mappingUtil.toEntity(track);
         trackEntity.setArtist(artist);
-        trackEntity.setDuration(track.getDuration());
 
-        // Если указан альбом, находим и устанавливаем его
         if (track.getAlbum() != null && track.getAlbum().getName() != null) {
             AlbumEntity album = albumRepository.findByName(track.getAlbum().getName());
             if (album == null) {
@@ -59,7 +58,10 @@ public class TrackService {
     }
 
     public void removeTrack(String name) {
-        trackRepository.delete(getTrack(name));
+        TrackEntity entity = trackRepository.findByName(name);
+        if (entity != null) {
+            trackRepository.delete(entity);
+        }
     }
 
     @Transactional
@@ -91,14 +93,11 @@ public class TrackService {
             existing.setDuration(dur);
         }
 
-        // Обновление альбома
         if (updatedFields.getAlbum() != null) {
             if (updatedFields.getAlbum().getName() == null ||
                     updatedFields.getAlbum().getName().isBlank()) {
-                // Если имя альбома пустое, удаляем связь
                 existing.setAlbum(null);
             } else {
-                // Находим и устанавливаем новый альбом
                 AlbumEntity album = albumRepository.findByName(updatedFields.getAlbum().getName());
                 if (album == null) {
                     throw new RuntimeException("Album not found: " + updatedFields.getAlbum().getName());
@@ -116,7 +115,7 @@ public class TrackService {
         if (existing == null) {
             return null;
         }
-        existing.setAlbum(null); // Удаляем связь с альбомом
+        existing.setAlbum(null);
         return trackRepository.save(existing);
     }
 }

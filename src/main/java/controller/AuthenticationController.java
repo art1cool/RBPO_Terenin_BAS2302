@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import configuration.JwtTokenProvider;
 import entity.UserEntity;
 import entity.UserSessionEntity;
@@ -28,6 +30,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Validated
 public class AuthenticationController {
 
     private final UserRepository userRepository;
@@ -66,7 +69,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@Valid @RequestBody User user) {
         try {
             UserEntity registeredUser = userService.registerUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");

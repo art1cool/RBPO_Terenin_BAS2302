@@ -1,5 +1,5 @@
 package controller;
-//1
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,6 @@ public class PlaylistTrackController {
 
     private final PlaylistTrackService playlistTrackService;
 
-    // 1. Добавить трек в плейлист (по именам)
     @PostMapping("/{playlistName}/tracks/{trackName}")
     @PreAuthorize("hasAuthority('modify')")
     public ResponseEntity<?> addTrackToPlaylist(
@@ -33,7 +32,6 @@ public class PlaylistTrackController {
         }
     }
 
-    // 2. Удалить трек из плейлиста (по именам)
     @DeleteMapping("/{playlistName}/tracks/{trackName}")
     @PreAuthorize("hasAuthority('modify')")
     public ResponseEntity<?> removeTrackFromPlaylist(
@@ -48,7 +46,6 @@ public class PlaylistTrackController {
         }
     }
 
-    // 3. Получить все треки в плейлисте (по имени плейлиста)
     @GetMapping("/{playlistName}/tracks")
     @PreAuthorize("hasAuthority('read')")
     public ResponseEntity<List<TrackEntity>> getPlaylistTracks(

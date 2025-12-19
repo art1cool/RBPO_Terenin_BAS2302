@@ -8,18 +8,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import repository.UserRepository;
+import repository.PlaylistRepository;
+import repository.PlaylistTrackRepository;
+import repository.UserSessionRepository;
 import entity.UserEntity;
+import entity.PlaylistEntity;
+import entity.UserSessionEntity;
 import model.User;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-
     private final UserRepository userRepository;
+    private final PlaylistRepository playlistRepository;
+    private final PlaylistTrackRepository playlistTrackRepository;
+    private final UserSessionRepository userSessionRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(readOnly = true)
     public UserEntity getUser(String name) {
-        return userRepository.findByName(name);
+        UserEntity user = userRepository.findByName(name);
+        if (user != null) {
+            user.getPlaylist().size();
+        }
+        return user;
     }
 
     public UserEntity addUser(User userDto) {
@@ -56,8 +70,21 @@ public class UserService implements UserDetailsService {
         return userRepository.save(userEntity);
     }
 
+    @Transactional
     public void removeUser(String name) {
-        userRepository.delete(getUser(name));
+        UserEntity user = userRepository.findByName(name);
+        if (user != null) {
+            List<PlaylistEntity> playlists = playlistRepository.findByUser(user);
+            for (PlaylistEntity playlist : playlists) {
+                playlistTrackRepository.deleteByPlaylist(playlist);
+                playlistRepository.delete(playlist);
+            }
+
+            List<UserSessionEntity> sessions = userSessionRepository.findByUserId(user.getId());
+            userSessionRepository.deleteAll(sessions);
+
+            userRepository.delete(user);
+        }
     }
 
     public UserEntity updateUser(String name, User updatedFields) {

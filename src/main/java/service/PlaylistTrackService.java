@@ -1,5 +1,5 @@
 package service;
-//1
+
 import entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,7 +40,6 @@ public class PlaylistTrackService {
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
     }
 
-    // Добавить трек в плейлист (по именам)
     @Transactional
     public void addTrackToPlaylist(String playlistName, String trackName) {
         PlaylistEntity playlist = playlistRepository.findByName(playlistName);
@@ -48,7 +47,6 @@ public class PlaylistTrackService {
             throw new RuntimeException("Playlist not found: " + playlistName);
         }
 
-        // Проверка прав доступа
         if (!isPlaylistOwner(playlist) && !isAdmin()) {
             throw new AccessDeniedException("You can only add tracks to your own playlists");
         }
@@ -58,7 +56,6 @@ public class PlaylistTrackService {
             throw new RuntimeException("Track not found: " + trackName);
         }
 
-        // Проверить, не добавлен ли уже трек
         Optional<PlaylistTrackEntity> existing = playlistTrackRepository
                 .findByPlaylistAndTrack(playlist, track);
 
@@ -66,7 +63,6 @@ public class PlaylistTrackService {
             throw new RuntimeException("Track already exists in playlist");
         }
 
-        // Создаем связь без позиции (если не нужно отслеживать порядок)
         PlaylistTrackEntity playlistTrack = new PlaylistTrackEntity();
         playlistTrack.setPlaylist(playlist);
         playlistTrack.setTrack(track);
@@ -74,7 +70,6 @@ public class PlaylistTrackService {
         playlistTrackRepository.save(playlistTrack);
     }
 
-    // Удалить трек из плейлиста (по именам)
     @Transactional
     public void removeTrackFromPlaylist(String playlistName, String trackName) {
         PlaylistEntity playlist = playlistRepository.findByName(playlistName);
@@ -82,7 +77,6 @@ public class PlaylistTrackService {
             throw new RuntimeException("Playlist not found: " + playlistName);
         }
 
-        // Проверка прав доступа
         if (!isPlaylistOwner(playlist) && !isAdmin()) {
             throw new AccessDeniedException("You can only remove tracks from your own playlists");
         }
@@ -95,7 +89,6 @@ public class PlaylistTrackService {
         playlistTrackRepository.deleteByPlaylistAndTrack(playlist, track);
     }
 
-    // Получить все треки в плейлисте (по имени плейлиста)
     public List<TrackEntity> getTracksInPlaylist(String playlistName) {
         PlaylistEntity playlist = playlistRepository.findByName(playlistName);
         if (playlist == null) {

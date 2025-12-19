@@ -1,5 +1,5 @@
 package controller;
-//1
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import model.Track;
@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import service.TrackService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import util.MappingUtil;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import entity.TrackEntity;
@@ -18,21 +19,26 @@ import entity.TrackEntity;
 @Validated
 public class TrackController {
     private final TrackService trackService;
+    private final MappingUtil mappingUtil;
 
     @GetMapping
     @PreAuthorize("hasAuthority('read')")
-    public ResponseEntity<TrackEntity> getTrack(String name) {
-        return ResponseEntity.ok()
-                .body(trackService.getTrack(name));
+    public ResponseEntity<Track> getTrack(String name) {
+        TrackEntity entity = trackService.getTrack(name);
+        if (entity == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(mappingUtil.toDto(entity));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TrackEntity> addTrack(
+    public ResponseEntity<Track> addTrack(
             @Valid @RequestBody Track track){
+        TrackEntity savedEntity = trackService.addTrack(track);
         return ResponseEntity.status(CREATED)
                 .header("Name", track.getName())
-                .body(trackService.addTrack(track));
+                .body(mappingUtil.toDto(savedEntity));
     }
 
     @DeleteMapping("by-name/{name}")
@@ -44,25 +50,24 @@ public class TrackController {
 
     @PatchMapping("/{name}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TrackEntity> updateTrack(
+    public ResponseEntity<Track> updateTrack(
             @PathVariable String name,
             @RequestBody Track updatedFields) {
 
-        TrackEntity updated = trackService.updateTrack(name, updatedFields);
-        if (updated == null) {
+        TrackEntity updatedEntity = trackService.updateTrack(name, updatedFields);
+        if (updatedEntity == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(mappingUtil.toDto(updatedEntity));
     }
 
-    // Удалить трек из альбома (но не удалять сам трек)
     @PatchMapping("/{name}/remove-from-album")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TrackEntity> removeTrackFromAlbum(@PathVariable String name) {
-        TrackEntity updated = trackService.removeTrackFromAlbum(name);
-        if (updated == null) {
+    public ResponseEntity<Track> removeTrackFromAlbum(@PathVariable String name) {
+        TrackEntity updatedEntity = trackService.removeTrackFromAlbum(name);
+        if (updatedEntity == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(mappingUtil.toDto(updatedEntity));
     }
 }

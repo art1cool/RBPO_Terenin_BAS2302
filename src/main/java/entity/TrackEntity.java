@@ -1,5 +1,5 @@
 package entity;
-//1
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,7 +28,7 @@ public class TrackEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id")
-    private AlbumEntity album; // Добавляем связь с альбомом
+    private AlbumEntity album;
 
     @Column(nullable = false)
     private String duration;

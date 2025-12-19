@@ -1,5 +1,5 @@
 package repository;
-//1
+
 import entity.PlaylistTrackEntity;
 import entity.PlaylistEntity;
 import entity.TrackEntity;
@@ -16,19 +16,23 @@ import java.util.UUID;
 @Repository
 public interface PlaylistTrackRepository extends JpaRepository<PlaylistTrackEntity, UUID> {
 
-    // Найти все треки в плейлисте
     List<PlaylistTrackEntity> findByPlaylist(PlaylistEntity playlist);
 
-    // Найти конкретную связь плейлист-трек
     Optional<PlaylistTrackEntity> findByPlaylistAndTrack(PlaylistEntity playlist, TrackEntity track);
 
-    // Удалить трек из плейлиста
     @Modifying
     @Query("DELETE FROM PlaylistTrackEntity pt WHERE pt.playlist = :playlist AND pt.track = :track")
     void deleteByPlaylistAndTrack(@Param("playlist") PlaylistEntity playlist,
                                   @Param("track") TrackEntity track);
 
-    // Получить количество треков в плейлисте
     @Query("SELECT COUNT(pt) FROM PlaylistTrackEntity pt WHERE pt.playlist = :playlist")
     int countByPlaylist(@Param("playlist") PlaylistEntity playlist);
+
+    @Modifying
+    @Query("DELETE FROM PlaylistTrackEntity pt WHERE pt.playlist = :playlist")
+    void deleteByPlaylist(@Param("playlist") PlaylistEntity playlist);
+
+    @Modifying
+    @Query("DELETE FROM PlaylistTrackEntity pt WHERE pt.track = :track")
+    void deleteByTrack(@Param("track") TrackEntity track);
 }

@@ -1,5 +1,5 @@
 package entity;
-//1
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,5 +31,5 @@ public class AlbumEntity {
     private ArtistEntity artist;
 
     @OneToMany(mappedBy = "album")
-    private List<TrackEntity> tracks; // Треки в альбоме
+    private List<TrackEntity> tracks;
 }
